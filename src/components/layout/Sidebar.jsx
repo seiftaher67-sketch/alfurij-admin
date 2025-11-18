@@ -117,7 +117,7 @@ export default function Sidebar({ onLogout }) {
       {/* Footer */}
       <div className="mt-12 pt-6 border-t border-gray-600">
         <p className="text-xs text-gray-400 text-center">
-          © 2024 Al-Furij
+          © 2025 Al-Furij
         </p>
       </div>
     </aside>

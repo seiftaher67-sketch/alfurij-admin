@@ -121,7 +121,7 @@ export default function Login({ onLogin }) {
         {/* Footer */}
         <div className="text-center">
           <p className="text-xs text-gray-500">
-            © 2024 Al-Furij. جميع الحقوق محفوظة.
+            © 2025 Al-Furij. جميع الحقوق محفوظة.
           </p>
         </div>
       </div>

@@ -53,7 +53,7 @@ export default function App() {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen flex bg-white text-dark">
+    <div dir="rtl" className="min-h-screen flex bg-yellow-100 text-dark">
       <Sidebar onLogout={handleLogout} />
       <main className="flex-1 p-6">
         <Routes>

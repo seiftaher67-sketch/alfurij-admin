@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import Uploader from "../ui/Uploader";
 import { PhotoIcon, TrashIcon } from "@heroicons/react/24/outline";
-import client from "../../api/client";
+import { bannerAPI } from "../../services/api";
 
 function SortableBanner({ banner, onDelete }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
@@ -28,6 +28,7 @@ function SortableBanner({ banner, onDelete }) {
       <img src={banner.image} alt={banner.title} className="w-32 h-12 object-cover rounded" />
       <span className="flex-1">{banner.title}</span>
       <button
+        onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation();
           onDelete(banner.id);
@@ -41,11 +42,29 @@ function SortableBanner({ banner, onDelete }) {
 }
 
 export default function BannersManager() {
-  const [banners, setBanners] = useState([
-    { id: 1, title: "Banner 1", image: "https://picsum.photos/300/100" },
-    { id: 2, title: "Banner 2", image: "https://picsum.photos/300/100" },
-  ]);
+  const [banners, setBanners] = useState([]);
   const [newBanner, setNewBanner] = useState({ title: "", image: "" });
+  const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [bannerToDelete, setBannerToDelete] = useState(null);
+
+  useEffect(() => {
+    fetchBanners();
+  }, []);
+
+  const fetchBanners = async () => {
+    try {
+      const data = await bannerAPI.getBanners();
+      setBanners(data.map(banner => ({
+        ...banner,
+        image: banner.image_path
+      })));
+    } catch (error) {
+      console.error("Failed to fetch banners:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setNewBanner({ ...newBanner, [e.target.name]: e.target.value });
@@ -54,8 +73,11 @@ export default function BannersManager() {
   const addBanner = async () => {
     if (!newBanner.title || !newBanner.image) return;
     try {
-      // await client.post("/banners", newBanner);
-      setBanners([...banners, { ...newBanner, id: Date.now() }]);
+      const data = await bannerAPI.addBanner(newBanner);
+      setBanners([...banners, {
+        ...data,
+        image: `http://localhost:8000/storage/${data.image_path}`
+      }]);
       setNewBanner({ title: "", image: "" });
     } catch (error) {
       console.error("Failed to add banner:", error);
@@ -64,10 +86,39 @@ export default function BannersManager() {
 
   const deleteBanner = async (id) => {
     try {
-      // await client.delete(`/banners/${id}`);
+      await bannerAPI.deleteBanner(id);
       setBanners(banners.filter((b) => b.id !== id));
+      setShowDeleteModal(false);
+      setBannerToDelete(null);
     } catch (error) {
       console.error("Failed to delete banner:", error);
+    }
+  };
+
+  const handleDeleteClick = (id) => {
+    setBannerToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    if (bannerToDelete) {
+      deleteBanner(bannerToDelete);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setBannerToDelete(null);
+  };
+
+  const saveOrder = async () => {
+    try {
+      const order = banners.map(b => b.id);
+      await bannerAPI.updateOrder(order);
+      alert("Order saved successfully!");
+    } catch (error) {
+      console.error("Failed to save order:", error);
+      alert("Failed to save order");
     }
   };
 
@@ -114,13 +165,38 @@ export default function BannersManager() {
         <SortableContext items={banners.map(b => b.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-2 mb-6">
             {banners.map((banner) => (
-              <SortableBanner key={banner.id} banner={banner} onDelete={deleteBanner} />
+              <SortableBanner key={banner.id} banner={banner} onDelete={handleDeleteClick} />
             ))}
           </div>
         </SortableContext>
       </DndContext>
 
-     
+      <button onClick={saveOrder} className="px-4 py-2 bg-green-600 text-white rounded">
+        حفظ التغييرات
+      </button>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-4">تأكيد الحذف</h3>
+            <p className="mb-4">هل أنت متأكد من حذف هذا البانر؟</p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                حذف
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

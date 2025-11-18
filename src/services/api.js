@@ -242,6 +242,107 @@ export const modelAPI = {
   },
 };
 
+// Banner API functions
+export const bannerAPI = {
+  getBanners: async () => {
+    const token = localStorage.getItem('admin_token');
+
+    const response = await fetch(`${API_BASE_URL}/banners`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch banners');
+    }
+
+    return data;
+  },
+
+  addBanner: async (bannerData) => {
+    const token = localStorage.getItem('admin_token');
+    const formData = new FormData();
+
+    // Add text fields
+    Object.keys(bannerData).forEach(key => {
+      if (key !== 'image') {
+        if (bannerData[key] !== null && bannerData[key] !== undefined) {
+          formData.append(key, bannerData[key]);
+        }
+      }
+    });
+
+    // Add image file
+    if (bannerData.image) {
+      formData.append('image', bannerData.image);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/banners`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to add banner');
+    }
+
+    return data;
+  },
+
+  updateOrder: async (order) => {
+    const token = localStorage.getItem('admin_token');
+
+    const response = await fetch(`${API_BASE_URL}/banners/update-order`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ order }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to update order');
+    }
+
+    return data;
+  },
+
+  deleteBanner: async (id) => {
+    const token = localStorage.getItem('admin_token');
+
+    const response = await fetch(`${API_BASE_URL}/banners/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to delete banner');
+    }
+
+    return data;
+  },
+};
+
 // Admin API functions
 export const adminAPI = {
   login: async (loginData) => {
