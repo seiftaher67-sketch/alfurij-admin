@@ -41,7 +41,7 @@ export default function Listings() {
       if (filters.city) params.city = filters.city;
       if (filters.category) params.category = filters.category;
 
-      const response = await listingAPI.getListings(params);
+      const response = await listingAPI.getAdminListings(params);
       setListings(response.data || []);
     } catch (err) {
       setError(err.message);

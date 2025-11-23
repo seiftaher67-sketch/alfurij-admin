@@ -45,6 +45,10 @@ export default function AddTruck() {
     image: [],
     pdf: [],
     video: null,
+    auctionStartDate: "",
+    auctionStartTime: "",
+    auctionEndDate: "",
+    auctionEndTime: "",
   });
 
   const [dragOver, setDragOver] = useState({ image: false, pdf: false, video: false });
@@ -69,8 +73,8 @@ export default function AddTruck() {
       alert('لا يمكن رفع أكثر من 10 صور');
       return;
     }
-    if (type === 'pdf' && combined.length > 3) {
-      alert('لا يمكن رفع أكثر من 3 مستندات');
+    if (type === 'pdf' && combined.length > 5) {
+      alert('لا يمكن رفع أكثر من 5 مستندات');
       return;
     }
 
@@ -144,6 +148,11 @@ export default function AddTruck() {
         image: [],
         pdf: [],
         video: null,
+        auctionStartDate: "",
+        auctionStartTime: "",
+        auctionEndDate: "",
+        auctionEndTime: "",
+        pointValue: "",
       });
     },
     onError: (error) => {
@@ -224,6 +233,12 @@ export default function AddTruck() {
       documents: null,
       approval_status: 'pending',
       other: selectedFeatures,
+      // Auction data
+      auction_start_date: form.auctionStartDate || null,
+      auction_start_time: form.auctionStartTime || null,
+      auction_end_date: form.auctionEndDate || null,
+      auction_end_time: form.auctionEndTime || null,
+      point_value: parseFloat(form.pointValue) || null,
       // Files will be sent in FormData in api.js
       image: form.image,
       video: form.video,
@@ -246,29 +261,7 @@ export default function AddTruck() {
         <h2 className="text-xl font-semibold">قم بإنشاء إعلان خاص بك</h2>
       </div>
 
-      {/* Ad type */}
-      <div className="flex flex-wrap gap-4 md:gap-6 mb-6">
-        <label className="flex items-center gap-2">
-          <input
-            type="radio"
-            name="adType"
-            value="ad"
-            checked={form.adType === "ad"}
-            onChange={handleChange}
-          />
-          <span>إعلان</span>
-        </label>
-        <label className="flex items-center gap-2">
-          <input
-            type="radio"
-            name="adType"
-            value="auction"
-            checked={form.adType === "auction"}
-            onChange={handleChange}
-          />
-          <span>مزاد</span>
-        </label>
-      </div>
+
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Upload section */}
@@ -432,10 +425,10 @@ export default function AddTruck() {
               </div>
             )}
             <p className="text-sm text-gray-600">
-              {form.pdf.length}/3 مستندات محددة
+              {form.pdf.length}/5 مستندات محددة
             </p>
             <p className="text-xs text-amber-600 mt-1">
-              ملاحظة: الحد الأقصى لعدد المستندات هو 3 مستندات
+              ملاحظة: الحد الأقصى لعدد المستندات هو 5 مستندات
             </p>
           </div>
         </div>
@@ -947,6 +940,126 @@ export default function AddTruck() {
             </div>
           </div>
         </div>
+
+        {/* Ad type */}
+        <div className="flex flex-wrap gap-4 md:gap-6 mb-6">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="adType"
+              value="ad"
+              checked={form.adType === "ad"}
+              onChange={handleChange}
+            />
+            <span>إعلان</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="adType"
+              value="live_auction"
+              checked={form.adType === "live_auction"}
+              onChange={handleChange}
+            />
+            <span>مزاد مباشر</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="adType"
+              value="scheduled_auction"
+              checked={form.adType === "scheduled_auction"}
+              onChange={handleChange}
+            />
+            <span>مزاد مجدول</span>
+          </label>
+        </div>
+
+        {/* Auction Date/Time Selection */}
+        {(form.adType === "live_auction" || form.adType === "scheduled_auction") && (
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-semibold mb-4">تفاصيل المزاد</h3>
+            <div className="mb-4">
+              <label className="block text-sm font-medium">قيمة النقطة (بالريال)</label>
+              <input
+                type="number"
+                name="pointValue"
+                value={form.pointValue}
+                onChange={handleChange}
+                className="mt-1 w-full p-3 border rounded-lg"
+                placeholder="أدخل قيمة النقطة"
+              />
+            </div>
+            {form.adType === "live_auction" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium">تاريخ المزاد</label>
+                  <input
+                    type="date"
+                    name="auctionStartDate"
+                    value={form.auctionStartDate}
+                    onChange={handleChange}
+                    className="mt-1 w-full p-3 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">وقت المزاد</label>
+                  <input
+                    type="time"
+                    name="auctionStartTime"
+                    value={form.auctionStartTime}
+                    onChange={handleChange}
+                    className="mt-1 w-full p-3 border rounded-lg"
+                  />
+                </div>
+              </div>
+            )}
+            {form.adType === "scheduled_auction" && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium">تاريخ البدء</label>
+                  <input
+                    type="date"
+                    name="auctionStartDate"
+                    value={form.auctionStartDate}
+                    onChange={handleChange}
+                    className="mt-1 w-full p-3 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">وقت البدء</label>
+                  <input
+                    type="time"
+                    name="auctionStartTime"
+                    value={form.auctionStartTime}
+                    onChange={handleChange}
+                    className="mt-1 w-full p-3 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">تاريخ الانتهاء</label>
+                  <input
+                    type="date"
+                    name="auctionEndDate"
+                    value={form.auctionEndDate}
+                    onChange={handleChange}
+                    className="mt-1 w-full p-3 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">وقت الانتهاء</label>
+                  <input
+                    type="time"
+                    name="auctionEndTime"
+                    value={form.auctionEndTime}
+                    onChange={handleChange}
+                    className="mt-1 w-full p-3 border rounded-lg"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Submit */}
         <div className="flex justify-center mt-8">

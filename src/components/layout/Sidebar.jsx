@@ -8,6 +8,7 @@ import {
   Bell,
   DollarSign,
   LogOut,
+  MessageSquare,
 } from "lucide-react";
 
 const menu = [
@@ -15,7 +16,7 @@ const menu = [
   { to: "/listings", label: "القوائم", icon: List },
   { to: "/auctions", label: "المزادات", icon: Gavel },
   {
-    label: "إضافة شاحنة",
+    label: "إضافة ",
     icon: Truck,
     subItems: [
       { to: "/add-truck", label: "إضافة إعلان" },
@@ -23,6 +24,7 @@ const menu = [
       { to: "/banners", label: "إضافة بانر" },
     ],
   },
+  { to: "/complaints", label: "الشكاوى والاقتراحات", icon: MessageSquare },
   { to: "/notifications", label: "الإشعارات", icon: Bell },
   { to: "/financial-transactions", label: "المعاملات المالية", icon: DollarSign },
 ];
@@ -39,15 +41,11 @@ export default function Sidebar({ onLogout }) {
       {/* Logo Section */}
       <div className="flex items-center justify-start mb-8">
         <div className="bg-primary p-3 rounded-2xl ">
-          <img src="/Alfouriaj-01 1 (1).png" alt="Logo" className="h-16 w-auto" />
+          <img src="dist/Alfouriaj-01 1 (1).png" alt="Logo" className="h-16 w-auto" />
         </div>
       </div>
 
-      {/* Title */}
-      <h2 className="text-lg font-bold text-black-500 mb-8 text-center tracking-wide">
-        Al-Furij Dashboard
-      </h2>
-
+      
       {/* Navigation */}
       <nav className="flex flex-col gap-2">
         {menu.map((item, index) => (
@@ -116,8 +114,8 @@ export default function Sidebar({ onLogout }) {
 
       {/* Footer */}
       <div className="mt-12 pt-6 border-t border-gray-600">
-        <p className="text-xs text-gray-400 text-center">
-          © 2025 Al-Furij
+        <p className="text-xs text-black text-center">
+          © 2025 Atlas-data
         </p>
       </div>
     </aside>

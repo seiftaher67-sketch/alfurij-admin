@@ -39,7 +39,7 @@ export default function Login({ onLogin }) {
         {/* Logo Section */}
         <div className="text-center">
           <div className="mx-auto h-30 w-30 bg-primary rounded-full flex items-center justify-end pr-2">
-            <img src="/Alfouriaj-01 1 (1).png" alt="Al-Furij Logo" className="h-22 w-auto" />
+            <img src="dist/Alfouriaj-01 1 (1).png" alt="Al-Furij Logo" className="h-22 w-auto" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
             مرحباً بك في لوحة التحكم
@@ -120,8 +120,8 @@ export default function Login({ onLogin }) {
 
         {/* Footer */}
         <div className="text-center">
-          <p className="text-xs text-gray-500">
-            © 2025 Al-Furij. جميع الحقوق محفوظة.
+          <p className="text-xs text-black-500">
+            © 2025 Atlas-data. جميع الحقوق محفوظة.
           </p>
         </div>
       </div>

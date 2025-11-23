@@ -16,7 +16,7 @@ const API_BASE_URL = 'http://localhost:8000/api';
 // Listing API functions
 export const listingAPI = {
   createListing: async (listingData) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('admin_token');
     const formData = new FormData();
 
     // Add text fields
@@ -35,14 +35,18 @@ export const listingAPI = {
     });
 
     // Add files
-    if (listingData.image) {
-      formData.append('files[image]', listingData.image);
+    if (listingData.image && Array.isArray(listingData.image)) {
+      listingData.image.forEach(file => {
+        formData.append('files[image][]', file);
+      });
     }
     if (listingData.video) {
       formData.append('files[video]', listingData.video);
     }
-    if (listingData.pdf) {
-      formData.append('files[pdf]', listingData.pdf);
+    if (listingData.pdf && Array.isArray(listingData.pdf)) {
+      listingData.pdf.forEach(file => {
+        formData.append('files[pdf][]', file);
+      });
     }
 
     const response = await fetch(`${API_BASE_URL}/listings`, {
@@ -85,6 +89,28 @@ export const listingAPI = {
     return data;
   },
 
+  getAdminListings: async (params = {}) => {
+    const token = localStorage.getItem('admin_token');
+    const queryString = new URLSearchParams(params).toString();
+    const url = `${API_BASE_URL}/admin/listings${queryString ? `?${queryString}` : ''}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch admin listings');
+    }
+
+    return data;
+  },
+
   getListing: async (id) => {
     const token = localStorage.getItem('admin_token');
 
@@ -105,10 +131,32 @@ export const listingAPI = {
     return data;
   },
 
-  approveListing: async (id) => {
+  approveListing: async (id, auctionData = {}) => {
     const token = localStorage.getItem('admin_token');
 
     const response = await fetch(`${API_BASE_URL}/listings/${id}/approve`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(auctionData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to approve listing');
+    }
+
+    return data;
+  },
+
+  rejectListing: async (id) => {
+    const token = localStorage.getItem('admin_token');
+
+    const response = await fetch(`${API_BASE_URL}/listings/${id}/reject`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -119,7 +167,7 @@ export const listingAPI = {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || 'Failed to approve listing');
+      throw new Error(data.message || 'Failed to reject listing');
     }
 
     return data;
@@ -240,6 +288,26 @@ export const modelAPI = {
 
     return data;
   },
+
+  deleteAllModels: async () => {
+    const token = localStorage.getItem('admin_token');
+
+    const response = await fetch(`${API_BASE_URL}/models/delete-all`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to delete all models');
+    }
+
+    return data;
+  },
 };
 
 // Banner API functions
@@ -343,6 +411,220 @@ export const bannerAPI = {
   },
 };
 
+// Auction API functions
+export const auctionAPI = {
+  getAuctions: async (params = {}) => {
+    const token = localStorage.getItem('admin_token');
+    const queryString = new URLSearchParams(params).toString();
+    const url = `${API_BASE_URL}/admin/auctions${queryString ? `?${queryString}` : ''}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch auctions');
+    }
+
+    return data;
+  },
+
+  getAuction: async (id) => {
+    const token = localStorage.getItem('admin_token');
+
+    const response = await fetch(`${API_BASE_URL}/auctions/${id}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch auction');
+    }
+
+    return data;
+  },
+
+  startStream: async (id, data) => {
+    const token = localStorage.getItem('admin_token');
+
+    const response = await fetch(`${API_BASE_URL}/auctions/${id}/streams/start`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to start stream');
+    }
+
+    return result;
+  },
+
+  endStream: async (id) => {
+    const token = localStorage.getItem('admin_token');
+
+    const response = await fetch(`${API_BASE_URL}/auctions/${id}/streams/end`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to end stream');
+    }
+
+    return data;
+  },
+
+  updateAuction: async (id, auctionData) => {
+    const token = localStorage.getItem('admin_token');
+
+    const response = await fetch(`${API_BASE_URL}/auctions/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(auctionData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to update auction');
+    }
+
+    return data;
+  },
+
+  // Stream API functions
+  getStreams: async (auctionId) => {
+    const token = localStorage.getItem('admin_token');
+
+    const response = await fetch(`${API_BASE_URL}/auctions/${auctionId}/streams`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch streams');
+    }
+
+    return data;
+  },
+
+  storeStream: async (auctionId, streamData) => {
+    const token = localStorage.getItem('admin_token');
+
+    const response = await fetch(`${API_BASE_URL}/auctions/${auctionId}/streams`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(streamData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to create stream');
+    }
+
+    return data;
+  },
+
+  updateStream: async (auctionId, streamId, streamData) => {
+    const token = localStorage.getItem('admin_token');
+
+    const response = await fetch(`${API_BASE_URL}/auctions/${auctionId}/streams/${streamId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(streamData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to update stream');
+    }
+
+    return data;
+  },
+
+  deleteStream: async (auctionId, streamId) => {
+    const token = localStorage.getItem('admin_token');
+
+    const response = await fetch(`${API_BASE_URL}/auctions/${auctionId}/streams/${streamId}`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to delete stream');
+    }
+
+    return data;
+  },
+
+  startLiveStream: async (streamId) => {
+    const token = localStorage.getItem('admin_token');
+
+    const response = await fetch(`${API_BASE_URL}/streams/${streamId}/start`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to start live stream');
+    }
+
+    return data;
+  },
+};
+
 // Admin API functions
 export const adminAPI = {
   login: async (loginData) => {
@@ -364,3 +646,24 @@ export const adminAPI = {
     return data;
   },
 };
+
+// Default export for general API calls
+const api = {
+  get: async (endpoint) => {
+    const token = localStorage.getItem('admin_token');
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch');
+    }
+    return { data };
+  },
+};
+
+export default api;
